@@ -1,4 +1,9 @@
 # Ai-Creation-sd1
 The ai assigment where we only use ai for code
-im going to make a little shop in unity that you can open  up buy stuff in and get currency 
-bassically as test for practice for games but i think i cna make it into a game so no worries.
+
+In unity im going to make a shop, Where you can drag and drop items to buy them.
+Those items can be cosmetic or they can increase certain aspects of how you gain money.
+I want to implement animations but since this is more about the coding aspect.
+Il atleast first add slight game loop. 
+
+
