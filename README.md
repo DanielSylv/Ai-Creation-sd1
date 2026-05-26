@@ -6,4 +6,4 @@ Those items can be cosmetic or they can increase certain aspects of how you gain
 I want to implement animations but since this is more about the coding aspect.
 Il atleast first add slight game loop. 
 
-
+https://chat.mistral.ai/chat/c66e4ac5-1099-43e0-adb1-e8e4449c85ae
