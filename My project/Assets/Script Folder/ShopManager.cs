@@ -17,7 +17,13 @@ public class ShopManager : MonoBehaviour
     public Transform upgradesPanel;
 
     public int playerMoney = 1000;
-    private List<UpgradeItem> cartItems = new List<UpgradeItem>();
+
+    // Track quantities in the cart
+    private Dictionary<Upgrade, int> cartQuantities = new Dictionary<Upgrade, int>();
+    // Track how many of each upgrade the player has already purchased
+    private Dictionary<Upgrade, int> purchasedUpgrades = new Dictionary<Upgrade, int>();
+    // Track the GameObjects in the cart for each upgrade
+    private Dictionary<Upgrade, GameObject> cartItemObjects = new Dictionary<Upgrade, GameObject>();
 
     void Awake()
     {
@@ -37,51 +43,110 @@ public class ShopManager : MonoBehaviour
 
     public void ShowUpgrades(string category)
     {
-        // Clear existing upgrades
         foreach (Transform child in upgradesPanel)
         {
             Destroy(child.gameObject);
         }
 
-        // Instantiate upgrades for the selected category
         foreach (Upgrade upgrade in allUpgrades)
         {
             if (upgrade.category == category)
             {
                 GameObject upgradeGO = Instantiate(upgradePrefab, upgradesPanel);
                 UpgradeItem upgradeItem = upgradeGO.GetComponent<UpgradeItem>();
-                upgradeItem.upgrade = upgrade;
-                upgradeGO.GetComponentInChildren<Text>().text = upgrade.name + "\nCost: " + upgrade.cost;
+                if (upgradeItem != null)
+                {
+                    upgradeItem.upgrade = upgrade;
+                }
+
+                TMPro.TMP_Text[] texts = upgradeGO.GetComponentsInChildren<TMPro.TMP_Text>();
+                if (texts.Length > 0) texts[0].text = upgrade.name;
+                if (texts.Length > 1) texts[1].text = "Cost: " + upgrade.cost;
             }
         }
     }
 
-    public void AddToCart(UpgradeItem item)
+    // Add an upgrade to the cart (duplicates allowed)
+    public void AddToCart(Upgrade upgrade)
     {
-        cartItems.Add(item);
+        // Check if adding this upgrade would exceed the limit
+        int currentCartQty = cartQuantities.ContainsKey(upgrade) ? cartQuantities[upgrade] : 0;
+        int currentPurchasedQty = purchasedUpgrades.ContainsKey(upgrade) ? purchasedUpgrades[upgrade] : 0;
+
+        if (currentCartQty + currentPurchasedQty >= upgrade.maxPurchaseLimit)
+        {
+            Debug.Log($"Cannot add more {upgrade.name}: limit of {upgrade.maxPurchaseLimit} reached!");
+            return;
+        }
+
+        // Increment the cart quantity
+        cartQuantities[upgrade] = currentCartQty + 1;
+
+        // If this is the first of this upgrade in the cart, instantiate a new prefab
+        if (!cartItemObjects.ContainsKey(upgrade))
+        {
+            GameObject cartItemGO = Instantiate(upgradePrefab, cartPanel.transform);
+            UpgradeItem cartItem = cartItemGO.GetComponent<UpgradeItem>();
+            cartItem.upgrade = upgrade;
+
+            // Disable drag-and-drop for cart items
+            cartItem.enabled = false;
+
+            // Update the text to show name, cost, and quantity
+            TMPro.TMP_Text[] texts = cartItemGO.GetComponentsInChildren<TMPro.TMP_Text>();
+            if (texts.Length > 0)
+            {
+                texts[0].text = $"{upgrade.name}";
+            }
+            if (texts.Length > 1)
+            {
+                texts[1].text = $"Cost: {upgrade.cost} (x{cartQuantities[upgrade]})";
+            }
+
+            cartItemObjects[upgrade] = cartItemGO;
+        }
+        else
+        {
+            // Update the existing cart item's text to reflect the new quantity
+            GameObject cartItemGO = cartItemObjects[upgrade];
+            TMPro.TMP_Text[] texts = cartItemGO.GetComponentsInChildren<TMPro.TMP_Text>();
+            if (texts.Length > 1)
+            {
+                texts[1].text = $"Cost: {upgrade.cost} (x{cartQuantities[upgrade]})";
+            }
+        }
     }
 
     public void ClearCart()
     {
-        foreach (UpgradeItem item in cartItems)
+        // Destroy all cart item GameObjects
+        foreach (var kvp in cartItemObjects)
         {
-            Destroy(item.gameObject);
+            Destroy(kvp.Value);
         }
-        cartItems.Clear();
+        cartItemObjects.Clear();
+        cartQuantities.Clear();
     }
 
     public void ConfirmPurchase()
     {
         int totalCost = 0;
-        foreach (UpgradeItem item in cartItems)
+        foreach (var kvp in cartQuantities)
         {
-            totalCost += item.upgrade.cost;
+            totalCost += kvp.Key.cost * kvp.Value;
         }
 
         if (playerMoney >= totalCost)
         {
             playerMoney -= totalCost;
             UpdateMoneyDisplay();
+
+            // Update purchased quantities
+            foreach (var kvp in cartQuantities)
+            {
+                purchasedUpgrades[kvp.Key] = (purchasedUpgrades.ContainsKey(kvp.Key) ? purchasedUpgrades[kvp.Key] : 0) + kvp.Value;
+            }
+
             ClearCart();
             Debug.Log("Purchase successful!");
         }

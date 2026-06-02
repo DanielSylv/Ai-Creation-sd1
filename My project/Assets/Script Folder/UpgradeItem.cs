@@ -7,7 +7,7 @@ public class UpgradeItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public Upgrade upgrade;
     private Transform originalParent;
     private Vector3 originalPosition;
-    private Transform dragParent; // Parent while dragging (e.g., Canvas)
+    private Transform dragParent;
 
     void Start()
     {
@@ -19,7 +19,11 @@ public class UpgradeItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     {
         originalPosition = transform.position;
         transform.SetParent(dragParent);
-        GetComponent<CanvasGroup>().blocksRaycasts = false;
+        CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = false;
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -29,20 +33,23 @@ public class UpgradeItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        GetComponent<CanvasGroup>().blocksRaycasts = true;
+        CanvasGroup canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = true;
+        }
 
         // Check if dropped in the CartPanel
         if (RectTransformUtility.RectangleContainsScreenPoint(
             ShopManager.instance.cartPanel.GetComponent<RectTransform>(),
             eventData.position))
         {
-            transform.SetParent(ShopManager.instance.cartPanel.transform);
-            ShopManager.instance.AddToCart(this);
+            // Pass the upgrade data to ShopManager
+            ShopManager.instance.AddToCart(this.upgrade);
         }
-        else
-        {
-            transform.SetParent(originalParent);
-            transform.position = originalPosition;
-        }
+
+        // Always return to original position
+        transform.SetParent(originalParent);
+        transform.position = originalPosition;
     }
 }
