@@ -1510,17 +1510,20 @@ MonoBehaviour:
     cost: 200
     category: Dirt
     icon: {fileID: 0}
+    maxPurchaseLimit: 3
   - name: Good Lunch
     cost: 2000
     category: Dirt
     icon: {fileID: 0}
+    maxPurchaseLimit: 3
   - name: Rock Munch
     cost: 100
     category: Rock
     icon: {fileID: 0}
+    maxPurchaseLimit: 3
   upgradePrefab: {fileID: 586573629359670386, guid: 18099cfff6ef62e4c91aa210fe08f2cd, type: 3}
   upgradesPanel: {fileID: 483940278}
-  playerMoney: 1000
+  playerMoney: 9000
 --- !u!4 &943694082
 Transform:
   m_ObjectHideFlags: 0
@@ -1967,14 +1970,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
   m_Padding:
-    m_Left: 10
-    m_Right: 10
-    m_Top: 10
-    m_Bottom: 10
+    m_Left: 5
+    m_Right: 5
+    m_Top: 5
+    m_Bottom: 5
   m_ChildAlignment: 0
-  m_Spacing: 10
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
+  m_Spacing: 5
+  m_ChildForceExpandWidth: 0
+  m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
